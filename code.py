@@ -2,7 +2,7 @@ import adafruit_funhouse
 import wifi
 import time
 
-mqtt_publish_frequency_in_seconds = 2
+mqtt_publish_frequency_in_seconds = 1
 sensor_read_frequency_in_seconds = 0.02
 
 try:
@@ -104,7 +104,8 @@ while True:
                 % (mqtt_light_level_topic, average_light_level)
             )
 
-            light_sensor_samples.clear()
+            # delete first half of list
+            del light_sensor_samples[: int(N / 2)]
             last_publish = time.monotonic()
 
         funhouse.network.mqtt_loop(0.5)
