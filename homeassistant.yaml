@@ -1,0 +1,7 @@
+# Example configuration.yaml entry
+mqtt:
+  sensor:
+    - name: "Upstairs Light Sensor"
+      state_topic: "homeassistant/sensor/upstairslight"
+      device_class: "illuminance"
+      unit_of_measurement: "lx"

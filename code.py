@@ -1,6 +1,9 @@
 import adafruit_funhouse
 import wifi
 import time
+import board
+import analogio
+
 
 mqtt_publish_frequency_in_seconds = 1
 sensor_read_frequency_in_seconds = 0.02
@@ -15,9 +18,10 @@ print("Connecting to %s" % secrets["ssid"])
 wifi.radio.connect(secrets["ssid"], secrets["password"])
 print("Connected to %s!" % secrets["ssid"])
 
-mqtt_light_level_topic = "home/upstairs/sensors/light/getCurrentAmbientLightLevel"
+mqtt_light_level_topic = "homeassistant/sensor/upstairslight"
 
 funhouse = adafruit_funhouse.FunHouse()
+photocell = analogio.AnalogIn(board.A0)
 
 # turn off display
 funhouse.display.brightness = 0.0
@@ -79,13 +83,18 @@ last_read_sensor = None
 light_sensor_samples = []
 
 
+def get_light_sensor_value():
+    # return funhouse.peripherals.light
+    return photocell.value
+
+
 while True:
     try:
         if (
             last_read_sensor is None
             or time.monotonic() > last_read_sensor + sensor_read_frequency_in_seconds
         ):
-            light_level = funhouse.peripherals.light
+            light_level = get_light_sensor_value()
             adjusted_light_level = light_level
             light_sensor_samples.append(adjusted_light_level)
             last_read_sensor = time.monotonic()

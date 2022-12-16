@@ -1,0 +1,11 @@
+{
+    "type": "lightSensor",
+    "name": "Living Room Light Sensor",
+    "topics": {
+        "getCurrentAmbientLightLevel": {
+            "topic": "home/upstairs/sensors/light/getCurrentAmbientLightLevel",
+            "apply": "return message;"
+        }
+    },
+    "accessory": "mqttthing"
+}
