@@ -7,6 +7,8 @@ import analogio
 
 mqtt_publish_frequency_in_seconds = 1
 sensor_read_frequency_in_seconds = 0.02
+low_light_threshold = 400
+day_light_threshold = 600
 
 try:
     from secrets import secrets
@@ -18,7 +20,7 @@ print("Connecting to %s" % secrets["ssid"])
 wifi.radio.connect(secrets["ssid"], secrets["password"])
 print("Connected to %s!" % secrets["ssid"])
 
-mqtt_light_level_topic = "homeassistant/sensor/upstairslight"
+mqtt_light_level_topic = "homeassistant/sensor/lowlight_upstairs"
 
 funhouse = adafruit_funhouse.FunHouse()
 photocell = analogio.AnalogIn(board.A0)
@@ -88,6 +90,8 @@ def get_light_sensor_value():
     return photocell.value
 
 
+last_average_light_level = None
+
 while True:
     try:
         if (
@@ -106,12 +110,37 @@ while True:
             N = len(light_sensor_samples)
             total = sum(light_sensor_samples)
             average_light_level = total / N
+            print("%d" % (average_light_level))
 
-            funhouse.network.mqtt_publish(mqtt_light_level_topic, average_light_level)
-            print(
-                "Publishing to %s with value %d"
-                % (mqtt_light_level_topic, average_light_level)
-            )
+            if last_average_light_level is None:
+                if average_light_level >= day_light_threshold:
+                    funhouse.network.mqtt_publish(
+                        mqtt_light_level_topic, "OFF", retain=True
+                    )
+                    print("day light triggered with value %d" % (average_light_level))
+                else:
+                    funhouse.network.mqtt_publish(
+                        mqtt_light_level_topic, "ON", retain=True
+                    )
+                    print("low light triggered with value %d" % (average_light_level))
+            elif (
+                last_average_light_level >= low_light_threshold
+                and average_light_level <= low_light_threshold
+            ):
+                # turn on low light switch to on
+                funhouse.network.mqtt_publish(mqtt_light_level_topic, "ON", retain=True)
+                print("low light triggered with value %d" % (average_light_level))
+            elif (
+                last_average_light_level <= day_light_threshold
+                and average_light_level >= day_light_threshold
+            ):
+                # turn off low light switch
+                funhouse.network.mqtt_publish(
+                    mqtt_light_level_topic, "OFF", retain=True
+                )
+                print("day light triggered with value %d" % (average_light_level))
+
+            last_average_light_level = average_light_level
 
             # delete first half of list
             del light_sensor_samples[: int(N / 2)]
