@@ -20,7 +20,7 @@ print("Connecting to %s" % secrets["ssid"])
 wifi.radio.connect(secrets["ssid"], secrets["password"])
 print("Connected to %s!" % secrets["ssid"])
 
-mqtt_light_level_topic = "homeassistant/sensor/lowlight_upstairs"
+mqtt_light_level_topic = secrets["mqtt_lightlevel_topic"]
 
 funhouse = adafruit_funhouse.FunHouse(default_bg=0x0F0F00, scale=2)
 photocell = analogio.AnalogIn(board.A0)
