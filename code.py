@@ -7,8 +7,8 @@ import analogio
 
 mqtt_publish_frequency_in_seconds = 1
 sensor_read_frequency_in_seconds = 0.02
-low_light_threshold = 400
-day_light_threshold = 600
+low_light_threshold = 450
+day_light_threshold = 650
 
 try:
     from secrets import secrets
